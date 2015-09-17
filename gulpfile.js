@@ -178,7 +178,7 @@ gulp.task('build', function(cb) {
 
 // Deploys app to GitHub Pages branch (remote, NOT local)
 gulp.task('deploy', function() {
-    return gulp.src('./client/**/*')
+    return gulp.src('./build/**/*')
         .pipe(pages());
 });
 
