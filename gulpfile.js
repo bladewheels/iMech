@@ -11,6 +11,7 @@ var gulp     = require('gulp');
 var rimraf   = require('rimraf');
 var router   = require('front-router');
 var sequence = require('run-sequence');
+var pages    = require('gulp-gh-pages');
 
 // Check for --production flag
 var isProduction = !!(argv.production);
@@ -173,6 +174,12 @@ gulp.task('server', ['build'], function() {
 // Builds your entire app once, without starting a server
 gulp.task('build', function(cb) {
   sequence('clean', ['copy', 'copy:foundation', 'sass', 'uglify'], 'copy:templates', cb);
+});
+
+// Deploys app to GitHub Pages branch (remote, NOT local)
+gulp.task('deploy', function() {
+    return gulp.src('./client/**/*')
+        .pipe(pages());
 });
 
 // Default task: builds your app, starts a server, and recompiles assets when they change
