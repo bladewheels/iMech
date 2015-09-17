@@ -1,0 +1,52 @@
+---
+name: admin
+url: /admin
+controller: ServiceCoordinatorController
+---
+
+<div class="grid-container">
+
+    <div class="grid-block">
+
+        <div class="grid-content medium-6 large-4">
+            <div class="card success" ui-sref="details_1">
+                <div id="chart_div_for_open_work_orders"></div>
+                <div class="card-divider">
+                    Open Work Orders
+                </div>
+                <div class="card-section">
+                    <p>Work Orders started but still needing parts and/or labour estimates</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-content medium-6 large-4">
+            <div class="card" ui-sref="details_1">
+                <div id="chart_div_for_estimated_work_orders"></div>
+
+                <div class="card-divider">
+                    Estimated Work Orders
+                </div>
+                <div class="card-section">
+                    <h4>Estimated Work Orders</h4>
+                    <p>Work Orders estimated but still needing scheduling and/or assignment to a Mek</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-content medium-6 large-4">
+            <div class="card" ui-sref="details_1">
+                <div id="chart_div_for_scheduled_work_orders"></div>
+                <div class="card-divider">
+                    Scheduled Work Orders
+                </div>
+                <div class="card-section">
+                    <h4>Scheduled Work Orders</h4>
+                    <p>Work Orders scheduled but still needing assignment to a Mek</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

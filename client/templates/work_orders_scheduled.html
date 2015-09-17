@@ -1,0 +1,131 @@
+---
+name: work_orders_scheduled
+url: /workOrdersScheduled
+animationIn: slideInLeft
+animationOut: slideOutRight
+---
+<!--
+<div ng-include="'partials/work_orders_return.html'"></div>
+-->
+
+<div class="grid-block">
+    <div class="grid-content">
+        <a href="#" ui-sref="coordinator" class="hollow button float-right top-margin"><img zf-iconic="" icon="dashboard" size="small" class="iconic-color-success">Return to Overview</a>
+        <hr>
+    </div>
+</div>
+
+<div class="grid-block" ng-controller="ScheduledOrdersController">
+    <div class="grid-content">
+
+        <h1>11 Work Orders awaiting scheduling</h1>
+        <hr>
+
+        <div>
+
+            <zf-accordion multi-open="false">
+                <zf-accordion-item  class="custom-accordion-title" ng-repeat="customer in customers" title="{{ customer.work.sinceNow }}">
+                    <div class="card">
+                        <div class="card-divider">
+                            {{customer.name}} requested that we:
+                        </div>
+                        <div class="card-section">
+                            <section class="block-list">
+                                <ul>
+                                    <li ng-repeat="detail in customer.work.details">{{detail}}</li>
+                                </ul>
+                            </section>
+                        </div>
+                    </div>
+                    <div zf-tabs="">
+                        <div zf-tab="" title="Address" class="custom-tabs-item">
+                            <a class="button medium success float-left" href="#" zf-open="map"><img zf-iconic="" icon="magnifying-glass" size="small"></a>
+                            <div class="card">
+                                <div class="card-section">
+                                    <ul class="no-bullet">
+                                        <li>{{$parent.customer.name}}</li>
+                                        <li>{{$parent.customer.address.addr1}}</li>
+                                        <li ng-if="$parent.customer.address.addr2 != ''">
+                                            {{$parent.customer.address.addr2}}
+                                        </li>
+                                        <li>{{$parent.customer.address.city}}, {{$parent.customer.address.state}}</li>
+                                        <li>{{$parent.customer.address.code}}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div zf-tab="" title="Schedule" class="custom-tabs-item">
+                            <a class="button medium success float-left" href="#" zf-open="scheduler"><img zf-iconic="" icon="circle-check" size="medium" class="iconic-color-secondary"></a>
+                            <div class="card">
+                                <div class="card-section">
+                                    {{$parent.customer.schedule}}
+                                </div>
+                            </div>
+                        </div>
+                        <div zf-tab="" title="Vehicle" class="custom-tabs-item">
+                        <div class="grid-block">
+                            <div class="grid-content">
+                                <div class="card">
+                                    <div class="card-section">
+                                        <h4>Details</h4>
+                                        <a class="button medium success float-left" href="#" zf-open="vehicle"><img zf-iconic="" icon="magnifying-glass" size="small"></a>
+                                        <ul class="no-bullet">
+                                            <li>{{$parent.customer.car.year}}</li>
+                                            <li>{{$parent.customer.car.make}} {{$parent.customer.car.model}}</li>
+                                            <li>{{$parent.customer.car.colour}}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid-content">
+                                <div class="card">
+                                    <div class="card-section">
+                                        <h4>Parts</h4>
+                                        <a class="button medium success float-left" href="#" zf-open="parts"><img zf-iconic="" icon="magnifying-glass" size="small"></a>
+                                        <ul class="no-bullet">
+                                            <li ng-repeat="part in $parent.customer.work.parts">{{part}}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-section">
+                                        <h4>Labour</h4>
+                                        <a class="button medium success float-left" href="#" zf-open="labour"><img zf-iconic="" icon="magnifying-glass" size="small"></a>
+                                        <ul class="no-bullet">
+                                            <li>{{$parent. customer.work.hours}}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </zf-accordion-item>
+            </zf-accordion>
+        </div>
+    </div>
+</div>
+
+<zf-notification-static id="scheduler-notify" title="Work Order Scheduled" position="bottom-left" autoclose="3000">
+    <p>We've scheduled the work!</p>
+</zf-notification-static>
+
+<!-- include Map modal -->
+<div ng-include="'partials/map.html'"></div>
+<!-- include Vehicle modal -->
+<div ng-include="'partials/vehicle.html'"></div>
+<!-- include Parts modal -->
+<div ng-include="'partials/parts.html'"></div>
+<!-- include Labour modal -->
+<div ng-include="'partials/labour.html'"></div>
+<!-- include Mek Scheduling modal -->
+<div ng-include="'partials/scheduler.html'"></div>
+
+
+
+
+
+
+

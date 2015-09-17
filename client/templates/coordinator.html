@@ -1,0 +1,56 @@
+---
+name: coordinator
+url: /coordinator
+controller: ServiceCoordinatorController
+animationIn: slideInRight
+animationOut: slideOutLeftt
+---
+
+<div class="grid-container">
+
+    <div class="grid-block">
+        <div class="grid-content">
+            <h3>My Work Orders</h3>
+        </div>
+    </div>
+
+    <div class="grid-block">
+        <div class="grid-content medium-6 large-4">
+            <div class="card success" ui-sref="work_orders_open">
+                <div id="chart_div_for_open_work_orders"></div>
+                <div class="card-divider">
+                    Open
+                </div>
+                <div class="card-section">
+                    <p>Work Orders started but still needing parts and/or labour estimates</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-content medium-6 large-4">
+            <div class="card warning" ui-sref="work_orders_estimated">
+                <div id="chart_div_for_estimated_work_orders"></div>
+                <div class="card-divider">
+                    Estimated
+                </div>
+                <div class="card-section">
+                    <p>Work Orders estimated but still needing scheduling and/or assignment to a Mech</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-content medium-6 large-4">
+            <div class="card alert" ui-sref="work_orders_scheduled">
+                <div id="chart_div_for_scheduled_work_orders"></div>
+                <div class="card-divider">
+                    Scheduled
+                </div>
+                <div class="card-section">
+                    <p>Work Orders scheduled but still needing assignment to a Mech</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <hr>
+</div>

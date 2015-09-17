@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" ng-app="application">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Foundation for Apps</title>
+    <link href="./assets/css/app.css" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+    <script src="./assets/js/foundation.js"></script>
+    <script src="./assets/js/templates.js"></script>
+    <script src="./assets/js/routes.js"></script>
+    <script src="./assets/js/app.js"></script>
+  </head>
+  <body>
+
+    <div class="grid-frame vertical">
+
+      <div class="grid-content shrink" style="padding: 0;">
+          <div class="menu-group primary">
+              <div class="menu-group-left">
+                  <ul class="menu-bar primary">
+                      <li ui-sref-active="is-active"><a ui-sref="home"><img zf-iconic="" icon="cog" size="medium"><strong> iMech</strong></a></li>
+                  </ul>
+              </div>
+              <div class="menu-group-right">
+                  <ul class="icon-left primary menu-bar">
+                      <li ui-sref-active="is-active"><a ui-sref="admin"><strong><img zf-iconic="" icon="person" size="small" class="float-left">&nbsp;Admin</strong></a></li>
+                      <li ui-sref-active="is-active"><a ui-sref="coordinator"><strong><img zf-iconic="" icon="person" size="small" class="float-left">&nbsp;Coordinator</strong></a></li>
+                      <li ui-sref-active="is-active"><a ui-sref="mech"><strong><img zf-iconic="" icon="person" size="small" class="float-left">&nbsp;Mech</strong></a></li>
+                      <li ui-sref-active="is-active"><a ui-sref="newWorkOrder"><strong><img zf-iconic="" icon="person" size="small" class="float-left">&nbsp;Customer</strong></a></li>
+                  </ul>
+              </div>
+          </div>
+      </div>
+
+      <div ui-view class="grid-content"></div>
+
+    </div>
+  </body>
+</html>
