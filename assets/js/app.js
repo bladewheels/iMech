@@ -56,6 +56,24 @@
               ['Last Day',   2],
               ['Last Week',  11]
           ]);
+          chartWorkOrders('Work Orders Assigned Since','chart_div_for_assigned_work_orders',[
+              ['Since', 'Count'],
+              ['Last Hour', 5],
+              ['Last Day',   6],
+              ['Last Week',  11]
+          ]);
+      })
+      .filter('confirmed', function() {
+          return function(input, step, state) {
+              input = input || [];
+              var out = [];
+              for (var i = 0; i < input.length; i++) {
+                  if (input[i][step].confirmed === state) {
+                      out.push(input[i]);
+                  }
+              }
+              return out;
+          };
       })
       .constant("moment", moment)
       .controller('ScheduledOrdersController', function($scope, moment){
@@ -68,8 +86,8 @@
                       city:'Calgary', state:'AB', code:'T2X 1Z4'
                   },
                   car: { year:1997, make:'Subaru', model:'Impreza', colour:'Blue' },
-                  work: { sinceNow: moment().add(7, 'days').toNow(), descr:'Do brakes', details: ['replace brake pads & fluids', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
+                  work: { sinceNow: moment().add(7, 'days').toNow(), descr:'Do brakes', details: ['replace brake pads & fluids', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
               },
               {
                   name:'Dick Green',
@@ -78,8 +96,8 @@
                       city:'Calgary', state:'AB', code:'T2X 1Z4'
                   },
                   car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
-                  work: { sinceNow: moment().add(6, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
+                  work: { sinceNow: moment().add(6, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
               },
               {
                   name:'Jill Black',
@@ -88,8 +106,28 @@
                       city:'Calgary', state:'AB', code:'T2X 1Z4'
                   },
                   car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
-                  work: { sinceNow: moment().add(6, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
+                  work: { sinceNow: moment().add(6, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
+              },
+              {
+                  name:'Jack Black',
+                  address: {
+                      addr1:'13424 Minister Rd SE', addr2:'',
+                      city:'Calgary', state:'AB', code:'T2X 1Z4'
+                  },
+                  car: { year:2012, make:'Ford', model:'F-350', colour:'Brown' },
+                  work: { sinceNow: moment().add(5, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
+              },
+              {
+                  name:'Kilroy Bojack',
+                  address: {
+                      addr1:'13424 Minister Rd SE', addr2:'',
+                      city:'Calgary', state:'AB', code:'T2X 1Z4'
+                  },
+                  car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
+                  work: { sinceNow: moment().add(4, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
               },
               {
                   name:'Jill Black',
@@ -98,8 +136,8 @@
                       city:'Calgary', state:'AB', code:'T2X 1Z4'
                   },
                   car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
-                  work: { sinceNow: moment().add(5, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
+                  work: { sinceNow: moment().add(3, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
               },
               {
                   name:'Jill Black',
@@ -108,8 +146,8 @@
                       city:'Calgary', state:'AB', code:'T2X 1Z4'
                   },
                   car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
-                  work: { sinceNow: moment().add(4, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
+                  work: { sinceNow: moment().add(2, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
               },
               {
                   name:'Jill Black',
@@ -118,28 +156,8 @@
                       city:'Calgary', state:'AB', code:'T2X 1Z4'
                   },
                   car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
-                  work: { sinceNow: moment().add(3, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
-              },
-              {
-                  name:'Jill Black',
-                  address: {
-                      addr1:'13424 Minister Rd SE', addr2:'',
-                      city:'Calgary', state:'AB', code:'T2X 1Z4'
-                  },
-                  car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
-                  work: { sinceNow: moment().add(2, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
-              },
-              {
-                  name:'Jill Black',
-                  address: {
-                      addr1:'13424 Minister Rd SE', addr2:'',
-                      city:'Calgary', state:'AB', code:'T2X 1Z4'
-                  },
-                  car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
-                  work: { sinceNow: moment().add(1, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
+                  work: { sinceNow: moment().add(1, 'days').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
               },
               {
                   name:'Joe Bue',
@@ -148,8 +166,8 @@
                       city:'Calgary', state:'AB', code:'T2X 1Z4'
                   },
                   car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
-                  work: { sinceNow: moment().add(12, 'hours').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
+                  work: { sinceNow: moment().add(12, 'hours').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
               },
               {
                   name:'Gill MacGillicuddy',
@@ -158,8 +176,8 @@
                       city:'Calgary', state:'AB', code:'T2X 1Z4'
                   },
                   car: { year:2012, make:'BMW', model:'M-3', colour:'White' },
-                  work: { sinceNow: moment().add(5, 'hours').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
+                  work: { sinceNow: moment().add(5, 'hours').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
               },
               {
                   name:'Jill Black',
@@ -168,8 +186,18 @@
                       city:'Calgary', state:'AB', code:'T2X 1Z4'
                   },
                   car: { year:2012, make:'Ford', model:'F-150', colour:'Silver' },
-                  work: { sinceNow: moment().add(47, 'minutes').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5},
-                  schedule: 'M-F, 1000h, 1430h'
+                  work: { sinceNow: moment().add(47, 'minutes').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: true},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: true }
+              },
+              {
+                  name:'Michael Shields',
+                  address: {
+                      addr1:'13424 Minister Rd SE', addr2:'',
+                      city:'Calgary', state:'AB', code:'T2X 1Z4'
+                  },
+                  car: { year:2012, make:'Audi', model:'A5', colour:'White' },
+                  work: { sinceNow: moment().add(47, 'minutes').toNow(), descr:'Fix stuff', details: ['replace brake pads', 'inspect and refurbish brake rotors as necessary'], parts: ['4 brake pads', '32 oz brake fluid'], hours: 2.5, confirmed: false},
+                  schedule: { asString: 'M-F, 1000h, 1430h', confirmed: false }
               }
           ];
       })
