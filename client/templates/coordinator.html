@@ -47,8 +47,8 @@ animationOut: slideOutLeftt
         <div class="grid-content medium-6 large-4">
             <div class="card alert">
                 <div id="chart_div_for_scheduled_work_orders"></div>
-                <div class="card-divider">
-                    <h4>Scheduled</h4>
+                <div class="card-divider" ng-controller="ScheduledOrdersController">
+                    <h4>{{customers.length}} Scheduled</h4>
                 </div>
                 <div class="card-section">
                     <p>Work Orders scheduled but still <strong>needing assignment</strong> to a Mech</p>
