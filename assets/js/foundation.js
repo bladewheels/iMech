@@ -38050,431 +38050,6 @@ angular.module('ui.router.state')
 (function() {
   'use strict';
 
-  angular.module('foundation.tabs', ['foundation.core'])
-    .controller('ZfTabsController', ZfTabsController)
-    .directive('zfTabs', zfTabs)
-    .directive('zfTabContent', zfTabContent)
-    .directive('zfTab', zfTab)
-    .directive('zfTabIndividual', zfTabIndividual)
-    .directive('zfTabHref', zfTabHref)
-    .directive('zfTabCustom', zfTabCustom)
-    .directive('zfTabContentCustom', zfTabContentCustom)
-    .service('FoundationTabs', FoundationTabs)
-  ;
-
-  FoundationTabs.$inject = ['FoundationApi'];
-
-  function FoundationTabs(foundationApi) {
-    var service    = {};
-
-    service.activate = activate;
-
-    return service;
-
-    //target should be element ID
-    function activate(target) {
-      foundationApi.publish(target, 'show');
-    }
-
-  }
-
-  ZfTabsController.$inject = ['$scope', 'FoundationApi'];
-
-  function ZfTabsController($scope, foundationApi) {
-    var controller = this;
-    var tabs       = controller.tabs = $scope.tabs = [];
-    var id         = '';
-
-    controller.select = function(selectTab) {
-      tabs.forEach(function(tab) {
-        tab.active = false;
-        tab.scope.active = false;
-
-        if(tab.scope === selectTab) {
-          foundationApi.publish(id, ['activate', tab]);
-
-          tab.active = true;
-          tab.scope.active = true;
-        }
-      });
-
-    };
-
-    controller.addTab = function addTab(tabScope) {
-      tabs.push({ scope: tabScope, active: false, parentContent: controller.id });
-
-      if(tabs.length === 1) {
-        tabs[0].active = true;
-        tabScope.active = true;
-      }
-    };
-
-    controller.getId = function() {
-      return id;
-    };
-
-    controller.setId = function(newId) {
-      id = newId;
-    };
-  }
-
-  zfTabs.$inject = ['FoundationApi'];
-
-  function zfTabs(foundationApi) {
-    var directive = {
-      restrict: 'EA',
-      transclude: 'true',
-      replace: true,
-      templateUrl: 'components/tabs/tabs.html',
-      controller: 'ZfTabsController',
-      scope: {
-        displaced: '@?'
-      },
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs, controller) {
-      scope.id = attrs.id || foundationApi.generateUuid();
-      scope.showTabContent = scope.displaced !== 'true';
-      attrs.$set('id', scope.id);
-      controller.setId(scope.id);
-
-      //update tabs in case tab-content doesn't have them
-      var updateTabs = function() {
-        foundationApi.publish(scope.id + '-tabs', scope.tabs);
-      };
-
-      foundationApi.subscribe(scope.id + '-get-tabs', function() {
-        updateTabs();
-      });
-    }
-  }
-
-  zfTabContent.$inject = ['FoundationApi'];
-
-  function zfTabContent(foundationApi) {
-    var directive = {
-      restrict: 'A',
-      transclude: 'true',
-      replace: true,
-      scope: {
-        tabs: '=?',
-        target: '@'
-      },
-      templateUrl: 'components/tabs/tab-content.html',
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs, ctrl) {
-      scope.tabs = scope.tabs || [];
-      var id = scope.target;
-
-      foundationApi.subscribe(id, function(msg) {
-        if(msg[0] === 'activate') {
-          var tabId = msg[1];
-          scope.tabs.forEach(function (tab) {
-            tab.scope.active = false;
-            tab.active = false;
-
-            if(tab.scope.id === id) {
-              tab.scope.active = true;
-              tab.active = true;
-            }
-          });
-        }
-      });
-
-      //if tabs empty, request tabs
-      if(scope.tabs.length === 0) {
-        foundationApi.subscribe(id + '-tabs', function(tabs) {
-          scope.tabs = tabs;
-        });
-
-        foundationApi.publish(id + '-get-tabs', '');
-      }
-    }
-  }
-
-  zfTab.$inject = ['FoundationApi'];
-
-  function zfTab(foundationApi) {
-    var directive = {
-      restrict: 'EA',
-      templateUrl: 'components/tabs/tab.html',
-      transclude: true,
-      scope: {
-        title: '@'
-      },
-      require: '^zfTabs',
-      replace: true,
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs, controller, transclude) {
-      scope.id = attrs.id || foundationApi.generateUuid();
-      scope.active = false;
-      scope.transcludeFn = transclude;
-      controller.addTab(scope);
-
-      foundationApi.subscribe(scope.id, function(msg) {
-        if(msg === 'show' || msg === 'open' || msg === 'activate') {
-          scope.makeActive();
-        }
-      });
-
-      scope.makeActive = function() {
-        controller.select(scope);
-      };
-    }
-  }
-
-  zfTabIndividual.$inject = ['FoundationApi'];
-
-  function zfTabIndividual(foundationApi) {
-    var directive = {
-      restrict: 'EA',
-      transclude: 'true',
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs, ctrl, transclude) {
-      var tab = scope.$eval(attrs.tab);
-      var id = tab.scope.id;
-
-      tab.scope.transcludeFn(tab.scope, function(tabContent) {
-        element.append(tabContent);
-      });
-
-      foundationApi.subscribe(tab.scope.id, function(msg) {
-        foundationApi.publish(tab.parentContent, ['activate', tab.scope.id]);
-        scope.$apply();
-      });
-
-    }
-  }
-
-  //custom tabs
-
-  zfTabHref.$inject = ['FoundationApi'];
-
-  function zfTabHref(foundationApi) {
-    var directive = {
-      restrict: 'A',
-      replace: false,
-      link: link
-    }
-
-    return directive;
-
-    function link(scope, element, attrs, ctrl) {
-      var target = attrs.zfTabHref;
-
-      foundationApi.subscribe(target, function(msg) {
-        if(msg === 'activate' || msg === 'show' || msg === 'open') {
-          makeActive();
-        }
-      });
-
-
-      element.on('click', function(e) {
-        foundationApi.publish(target, 'activate');
-        makeActive();
-        e.preventDefault();
-      });
-
-      function makeActive() {
-        element.parent().children().removeClass('is-active');
-        element.addClass('is-active');
-      }
-    }
-  }
-
-  zfTabCustom.$inject = ['FoundationApi'];
-
-  function zfTabCustom(foundationApi) {
-    var directive = {
-      restrict: 'A',
-      replace: false,
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs, ctrl, transclude) {
-      var children = element.children();
-      angular.element(children[0]).addClass('is-active');
-    }
-  }
-
-  zfTabContentCustom.$inject = ['FoundationApi'];
-
-  function zfTabContentCustom(foundationApi) {
-    return {
-      restrict: 'A',
-      link: link
-    };
-
-    function link(scope, element, attrs) {
-      var tabs = [];
-      var children = element.children();
-
-      angular.forEach(children, function(node) {
-        if(node.id) {
-          var tabId = node.id;
-          tabs.push(tabId);
-          foundationApi.subscribe(tabId, function(msg) {
-            if(msg === 'activate' || msg === 'show' || msg === 'open') {
-              activateTabs(tabId);
-            }
-          });
-
-          if(tabs.length === 1) {
-            var el = angular.element(node);
-            el.addClass('is-active');
-          }
-        }
-      });
-
-      function activateTabs(tabId) {
-        var tabNodes = element.children();
-        angular.forEach(tabNodes, function(node) {
-          var el = angular.element(node);
-          el.removeClass('is-active');
-          if(el.attr('id') === tabId) {
-            el.addClass('is-active');
-          }
-
-        });
-      }
-    }
-  }
-
-})();
-
-angular.module('markdown', [])
-  .directive('markdown', function() {
-    return {
-      restrict: 'A',
-      link: function(scope, element, attrs, controller) {
-        element.html(marked(element.html()));
-      }
-    };
-
-});
-
-'use strict';
-
-(function(){
-  var svgDirectives = {};
-
-  angular.forEach([
-      'clipPath',
-      'colorProfile',
-      'src',
-      'cursor',
-      'fill',
-      'filter',
-      'marker',
-      'markerStart',
-      'markerMid',
-      'markerEnd',
-      'mask',
-      'stroke'
-    ],
-    function(attr) {
-      svgDirectives[attr] = [
-          '$rootScope',
-          '$location',
-          '$interpolate',
-          '$sniffer',
-          'urlResolve',
-          'computeSVGAttrValue',
-          'svgAttrExpressions',
-          function(
-              $rootScope,
-              $location,
-              $interpolate,
-              $sniffer,
-              urlResolve,
-              computeSVGAttrValue,
-              svgAttrExpressions) {
-            return {
-              restrict: 'A',
-              link: function(scope, element, attrs) {
-                var initialUrl;
-
-                //Only apply to svg elements to avoid unnecessary observing
-                //Check that is in html5Mode and that history is supported
-                if ((!svgAttrExpressions.SVG_ELEMENT.test(element[0] &&
-                    element[0].toString())) ||
-                  !$location.$$html5 ||
-                  !$sniffer.history) return;
-
-                //Assumes no expressions, since svg is unforgiving of xml violations
-                initialUrl = attrs[attr];
-                attrs.$observe(attr, updateValue);
-                $rootScope.$on('$locationChangeSuccess', updateValue);
-
-                function updateValue () {
-                  var newVal = computeSVGAttrValue(initialUrl);
-                  //Prevent recursive updating
-                  if (newVal && attrs[attr] !== newVal) attrs.$set(attr, newVal);
-                }
-              }
-            };
-          }];
-  });
-
-  angular.module('ngSVGAttributes', []).
-    factory('urlResolve', [function() {
-      //Duplicate of urlResolve & urlParsingNode in angular core
-      var urlParsingNode = document.createElement('a');
-      return function urlResolve(url) {
-        urlParsingNode.setAttribute('href', url);
-        return urlParsingNode;
-      };
-    }]).
-    value('svgAttrExpressions', {
-      FUNC_URI: /^url\((.*)\)$/,
-      SVG_ELEMENT: /SVG[a-zA-Z]*Element/,
-      HASH_PART: /#.*/
-    }).
-    factory('computeSVGAttrValue', [
-                '$location', '$sniffer', 'svgAttrExpressions', 'urlResolve',
-        function($location,   $sniffer,   svgAttrExpressions,   urlResolve) {
-          return function computeSVGAttrValue(url) {
-            var match, fullUrl;
-            if (match = svgAttrExpressions.FUNC_URI.exec(url)) {
-              //hash in html5Mode, forces to be relative to current url instead of base
-              if (match[1].indexOf('#') === 0) {
-                fullUrl = $location.absUrl().
-                  replace(svgAttrExpressions.HASH_PART, '') +
-                  match[1];
-              }
-              //Presumably links to external SVG document
-              else {
-                fullUrl = urlResolve(match[1]);
-              }
-            }
-            return fullUrl ? 'url(' + fullUrl + ')' : null;
-          };
-        }
-      ]
-    ).
-    directive(svgDirectives);
-}());
-
-(function() {
-  'use strict';
-
   angular.module('foundation.core.animation', [])
     .service('FoundationAnimation', FoundationAnimation)
   ;
@@ -39247,6 +38822,119 @@ angular.module('markdown', [])
   }
 })();
 
+angular.module('markdown', [])
+  .directive('markdown', function() {
+    return {
+      restrict: 'A',
+      link: function(scope, element, attrs, controller) {
+        element.html(marked(element.html()));
+      }
+    };
+
+});
+
+'use strict';
+
+(function(){
+  var svgDirectives = {};
+
+  angular.forEach([
+      'clipPath',
+      'colorProfile',
+      'src',
+      'cursor',
+      'fill',
+      'filter',
+      'marker',
+      'markerStart',
+      'markerMid',
+      'markerEnd',
+      'mask',
+      'stroke'
+    ],
+    function(attr) {
+      svgDirectives[attr] = [
+          '$rootScope',
+          '$location',
+          '$interpolate',
+          '$sniffer',
+          'urlResolve',
+          'computeSVGAttrValue',
+          'svgAttrExpressions',
+          function(
+              $rootScope,
+              $location,
+              $interpolate,
+              $sniffer,
+              urlResolve,
+              computeSVGAttrValue,
+              svgAttrExpressions) {
+            return {
+              restrict: 'A',
+              link: function(scope, element, attrs) {
+                var initialUrl;
+
+                //Only apply to svg elements to avoid unnecessary observing
+                //Check that is in html5Mode and that history is supported
+                if ((!svgAttrExpressions.SVG_ELEMENT.test(element[0] &&
+                    element[0].toString())) ||
+                  !$location.$$html5 ||
+                  !$sniffer.history) return;
+
+                //Assumes no expressions, since svg is unforgiving of xml violations
+                initialUrl = attrs[attr];
+                attrs.$observe(attr, updateValue);
+                $rootScope.$on('$locationChangeSuccess', updateValue);
+
+                function updateValue () {
+                  var newVal = computeSVGAttrValue(initialUrl);
+                  //Prevent recursive updating
+                  if (newVal && attrs[attr] !== newVal) attrs.$set(attr, newVal);
+                }
+              }
+            };
+          }];
+  });
+
+  angular.module('ngSVGAttributes', []).
+    factory('urlResolve', [function() {
+      //Duplicate of urlResolve & urlParsingNode in angular core
+      var urlParsingNode = document.createElement('a');
+      return function urlResolve(url) {
+        urlParsingNode.setAttribute('href', url);
+        return urlParsingNode;
+      };
+    }]).
+    value('svgAttrExpressions', {
+      FUNC_URI: /^url\((.*)\)$/,
+      SVG_ELEMENT: /SVG[a-zA-Z]*Element/,
+      HASH_PART: /#.*/
+    }).
+    factory('computeSVGAttrValue', [
+                '$location', '$sniffer', 'svgAttrExpressions', 'urlResolve',
+        function($location,   $sniffer,   svgAttrExpressions,   urlResolve) {
+          return function computeSVGAttrValue(url) {
+            var match, fullUrl;
+            if (match = svgAttrExpressions.FUNC_URI.exec(url)) {
+              //hash in html5Mode, forces to be relative to current url instead of base
+              if (match[1].indexOf('#') === 0) {
+                fullUrl = $location.absUrl().
+                  replace(svgAttrExpressions.HASH_PART, '') +
+                  match[1];
+              }
+              //Presumably links to external SVG document
+              else {
+                fullUrl = urlResolve(match[1]);
+              }
+            }
+            return fullUrl ? 'url(' + fullUrl + ')' : null;
+          };
+        }
+      ]
+    ).
+    directive(svgDirectives);
+}());
+
 (function() {
   'use strict';
 
@@ -39582,6 +39270,178 @@ angular.module('markdown', [])
 
 })();
 
+(function() {
+  'use strict';
+
+  angular.module('foundation.common', ['foundation.core'])
+    .directive('zfClose', zfClose)
+    .directive('zfOpen', zfOpen)
+    .directive('zfToggle', zfToggle)
+    .directive('zfEscClose', zfEscClose)
+    .directive('zfSwipeClose', zfSwipeClose)
+    .directive('zfHardToggle', zfHardToggle)
+  ;
+
+  zfClose.$inject = ['FoundationApi'];
+
+  function zfClose(foundationApi) {
+    var directive = {
+      restrict: 'A',
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs) {
+      var targetId = '';
+      if (attrs.zfClose) {
+        targetId = attrs.zfClose;
+      } else {
+        var parentElement= false;
+        var tempElement = element.parent();
+        //find parent modal
+        while(parentElement === false) {
+          if(tempElement[0].nodeName == 'BODY') {
+            parentElement = '';
+          }
+
+          if(typeof tempElement.attr('zf-closable') !== 'undefined' && tempElement.attr('zf-closable') !== false) {
+            parentElement = tempElement;
+          }
+
+          tempElement = tempElement.parent();
+        }
+        targetId = parentElement.attr('id');
+      }
+
+      element.on('click', function(e) {
+        foundationApi.publish(targetId, 'close');
+        e.preventDefault();
+      });
+    }
+  }
+
+  zfOpen.$inject = ['FoundationApi'];
+
+  function zfOpen(foundationApi) {
+    var directive = {
+      restrict: 'A',
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs) {
+      element.on('click', function(e) {
+        foundationApi.publish(attrs.zfOpen, 'open');
+        e.preventDefault();
+      });
+    }
+  }
+
+  zfToggle.$inject = ['FoundationApi'];
+
+  function zfToggle(foundationApi) {
+    var directive = {
+      restrict: 'A',
+      link: link
+    }
+
+    return directive;
+
+    function link(scope, element, attrs) {
+      element.on('click', function(e) {
+        foundationApi.publish(attrs.zfToggle, 'toggle');
+        e.preventDefault();
+      });
+    }
+  }
+
+  zfEscClose.$inject = ['FoundationApi'];
+
+  function zfEscClose(foundationApi) {
+    var directive = {
+      restrict: 'A',
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs) {
+      element.on('keyup', function(e) {
+        if (e.keyCode === 27) {
+          foundationApi.closeActiveElements();
+        }
+        e.preventDefault();
+      });
+    }
+  }
+
+  zfSwipeClose.$inject = ['FoundationApi'];
+
+  function zfSwipeClose(foundationApi) {
+    var directive = {
+      restrict: 'A',
+      link: link
+    };
+    return directive;
+
+    function link($scope, element, attrs) {
+      var swipeDirection;
+      var hammerElem;
+      if (Hammer) {
+        hammerElem = new Hammer(element[0]);
+        // set the options for swipe (to make them a bit more forgiving in detection)
+        hammerElem.get('swipe').set({
+          direction: Hammer.DIRECTION_ALL,
+          threshold: 5, // this is how far the swipe has to travel
+          velocity: 0.5 // and this is how fast the swipe must travel
+        });
+      }
+      // detect what direction the directive is pointing
+      switch (attrs.zfSwipeClose) {
+        case 'right':
+          swipeDirection = 'swiperight';
+          break;
+        case 'left':
+          swipeDirection = 'swipeleft';
+          break;
+        case 'up':
+          swipeDirection = 'swipeup';
+          break;
+        case 'down':
+          swipeDirection = 'swipedown';
+          break;
+        default:
+          swipeDirection = 'swipe';
+      }
+      hammerElem.on(swipeDirection, function() {
+        foundationApi.publish(attrs.id, 'close');
+      });
+    }
+  }
+
+  zfHardToggle.$inject = ['FoundationApi'];
+
+  function zfHardToggle(foundationApi) {
+    var directive = {
+      restrict: 'A',
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs) {
+      element.on('click', function(e) {
+        foundationApi.closeActiveElements({exclude: attrs.zfHardToggle});
+        foundationApi.publish(attrs.zfHardToggle, 'toggle');
+        e.preventDefault();
+      });
+    }
+  }
+
+})();
+
 (function () {
   'use strict';
 
@@ -39763,273 +39623,6 @@ angular.module('markdown', [])
             }
           });
         }
-      }
-    }
-  }
-
-})();
-
-(function() {
-  'use strict';
-
-  angular.module('foundation.common', ['foundation.core'])
-    .directive('zfClose', zfClose)
-    .directive('zfOpen', zfOpen)
-    .directive('zfToggle', zfToggle)
-    .directive('zfEscClose', zfEscClose)
-    .directive('zfSwipeClose', zfSwipeClose)
-    .directive('zfHardToggle', zfHardToggle)
-  ;
-
-  zfClose.$inject = ['FoundationApi'];
-
-  function zfClose(foundationApi) {
-    var directive = {
-      restrict: 'A',
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs) {
-      var targetId = '';
-      if (attrs.zfClose) {
-        targetId = attrs.zfClose;
-      } else {
-        var parentElement= false;
-        var tempElement = element.parent();
-        //find parent modal
-        while(parentElement === false) {
-          if(tempElement[0].nodeName == 'BODY') {
-            parentElement = '';
-          }
-
-          if(typeof tempElement.attr('zf-closable') !== 'undefined' && tempElement.attr('zf-closable') !== false) {
-            parentElement = tempElement;
-          }
-
-          tempElement = tempElement.parent();
-        }
-        targetId = parentElement.attr('id');
-      }
-
-      element.on('click', function(e) {
-        foundationApi.publish(targetId, 'close');
-        e.preventDefault();
-      });
-    }
-  }
-
-  zfOpen.$inject = ['FoundationApi'];
-
-  function zfOpen(foundationApi) {
-    var directive = {
-      restrict: 'A',
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs) {
-      element.on('click', function(e) {
-        foundationApi.publish(attrs.zfOpen, 'open');
-        e.preventDefault();
-      });
-    }
-  }
-
-  zfToggle.$inject = ['FoundationApi'];
-
-  function zfToggle(foundationApi) {
-    var directive = {
-      restrict: 'A',
-      link: link
-    }
-
-    return directive;
-
-    function link(scope, element, attrs) {
-      element.on('click', function(e) {
-        foundationApi.publish(attrs.zfToggle, 'toggle');
-        e.preventDefault();
-      });
-    }
-  }
-
-  zfEscClose.$inject = ['FoundationApi'];
-
-  function zfEscClose(foundationApi) {
-    var directive = {
-      restrict: 'A',
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs) {
-      element.on('keyup', function(e) {
-        if (e.keyCode === 27) {
-          foundationApi.closeActiveElements();
-        }
-        e.preventDefault();
-      });
-    }
-  }
-
-  zfSwipeClose.$inject = ['FoundationApi'];
-
-  function zfSwipeClose(foundationApi) {
-    var directive = {
-      restrict: 'A',
-      link: link
-    };
-    return directive;
-
-    function link($scope, element, attrs) {
-      var swipeDirection;
-      var hammerElem;
-      if (Hammer) {
-        hammerElem = new Hammer(element[0]);
-        // set the options for swipe (to make them a bit more forgiving in detection)
-        hammerElem.get('swipe').set({
-          direction: Hammer.DIRECTION_ALL,
-          threshold: 5, // this is how far the swipe has to travel
-          velocity: 0.5 // and this is how fast the swipe must travel
-        });
-      }
-      // detect what direction the directive is pointing
-      switch (attrs.zfSwipeClose) {
-        case 'right':
-          swipeDirection = 'swiperight';
-          break;
-        case 'left':
-          swipeDirection = 'swipeleft';
-          break;
-        case 'up':
-          swipeDirection = 'swipeup';
-          break;
-        case 'down':
-          swipeDirection = 'swipedown';
-          break;
-        default:
-          swipeDirection = 'swipe';
-      }
-      hammerElem.on(swipeDirection, function() {
-        foundationApi.publish(attrs.id, 'close');
-      });
-    }
-  }
-
-  zfHardToggle.$inject = ['FoundationApi'];
-
-  function zfHardToggle(foundationApi) {
-    var directive = {
-      restrict: 'A',
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs) {
-      element.on('click', function(e) {
-        foundationApi.closeActiveElements({exclude: attrs.zfHardToggle});
-        foundationApi.publish(attrs.zfHardToggle, 'toggle');
-        e.preventDefault();
-      });
-    }
-  }
-
-})();
-
-(function() {
-  'use strict';
-
-  angular.module('foundation.interchange', ['foundation.core', 'foundation.mediaquery'])
-    .directive('zfInterchange', zfInterchange)
-  ;
-
-  zfInterchange.$inject = [ '$compile', '$http', '$templateCache', 'FoundationApi', 'FoundationMQ'];
-
-  function zfInterchange($compile, $http, $templateCache, foundationApi, foundationMQ) {
-
-    var directive = {
-      restrict: 'EA',
-      transclude: 'element',
-      scope: {
-        position: '@'
-      },
-      replace: true,
-      template: '<div></div>',
-      link: link
-    };
-
-    return directive;
-
-    function link(scope, element, attrs, ctrl, transclude) {
-      var childScope, current, scenarios, innerTemplates;
-
-      var globalQueries = foundationMQ.getMediaQueries();
-
-      //setup
-      foundationApi.subscribe('resize', function(msg) {
-        transclude(function(clone, newScope) {
-          if(!scenarios || !innerTemplates) {
-            collectInformation(clone);
-          }
-
-          var ruleMatches = foundationMQ.match(scenarios);
-          var scenario = ruleMatches.length === 0 ? null : scenarios[ruleMatches[0].ind];
-
-          //this could use some love
-          if(scenario && checkScenario(scenario)) {
-            var compiled;
-
-            if(childScope) {
-              childScope.$destroy();
-              childScope = null;
-            }
-
-            if(typeof scenario.templ !== 'undefined') {
-              childScope = newScope;
-
-              //temp container
-              var tmp = document.createElement('div');
-              tmp.appendChild(innerTemplates[scenario.templ][0]);
-
-              element.html(tmp.innerHTML);
-              $compile(element.contents())(childScope);
-              current = scenario;
-            } else {
-              var loader = templateLoader(scenario.src);
-              loader.success(function(html) {
-                childScope = newScope;
-                element.html(html);
-              }).then(function(){
-                $compile(element.contents())(childScope);
-                current = scenario;
-              });
-            }
-          }
-        });
-
-      });
-
-      //init
-      foundationApi.publish('resize', 'initial resize');
-
-      function templateLoader(templateUrl) {
-        return $http.get(templateUrl, {cache: $templateCache});
-      }
-
-      function collectInformation(el) {
-        var data = foundationMQ.collectScenariosFromElement(el);
-
-        scenarios = data.scenarios;
-        innerTemplates = data.templates;
-      }
-
-      function checkScenario(scenario) {
-        return !current || current !== scenario;
       }
     }
   }
@@ -40324,6 +39917,101 @@ angular.module('markdown', [])
 
     }
 
+  }
+
+})();
+
+(function() {
+  'use strict';
+
+  angular.module('foundation.interchange', ['foundation.core', 'foundation.mediaquery'])
+    .directive('zfInterchange', zfInterchange)
+  ;
+
+  zfInterchange.$inject = [ '$compile', '$http', '$templateCache', 'FoundationApi', 'FoundationMQ'];
+
+  function zfInterchange($compile, $http, $templateCache, foundationApi, foundationMQ) {
+
+    var directive = {
+      restrict: 'EA',
+      transclude: 'element',
+      scope: {
+        position: '@'
+      },
+      replace: true,
+      template: '<div></div>',
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs, ctrl, transclude) {
+      var childScope, current, scenarios, innerTemplates;
+
+      var globalQueries = foundationMQ.getMediaQueries();
+
+      //setup
+      foundationApi.subscribe('resize', function(msg) {
+        transclude(function(clone, newScope) {
+          if(!scenarios || !innerTemplates) {
+            collectInformation(clone);
+          }
+
+          var ruleMatches = foundationMQ.match(scenarios);
+          var scenario = ruleMatches.length === 0 ? null : scenarios[ruleMatches[0].ind];
+
+          //this could use some love
+          if(scenario && checkScenario(scenario)) {
+            var compiled;
+
+            if(childScope) {
+              childScope.$destroy();
+              childScope = null;
+            }
+
+            if(typeof scenario.templ !== 'undefined') {
+              childScope = newScope;
+
+              //temp container
+              var tmp = document.createElement('div');
+              tmp.appendChild(innerTemplates[scenario.templ][0]);
+
+              element.html(tmp.innerHTML);
+              $compile(element.contents())(childScope);
+              current = scenario;
+            } else {
+              var loader = templateLoader(scenario.src);
+              loader.success(function(html) {
+                childScope = newScope;
+                element.html(html);
+              }).then(function(){
+                $compile(element.contents())(childScope);
+                current = scenario;
+              });
+            }
+          }
+        });
+
+      });
+
+      //init
+      foundationApi.publish('resize', 'initial resize');
+
+      function templateLoader(templateUrl) {
+        return $http.get(templateUrl, {cache: $templateCache});
+      }
+
+      function collectInformation(el) {
+        var data = foundationMQ.collectScenariosFromElement(el);
+
+        scenarios = data.scenarios;
+        innerTemplates = data.templates;
+      }
+
+      function checkScenario(scenario) {
+        return !current || current !== scenario;
+      }
+    }
   }
 
 })();
@@ -40749,6 +40437,109 @@ angular.module('markdown', [])
 (function() {
   'use strict';
 
+  angular.module('foundation.offcanvas', ['foundation.core'])
+    .directive('zfOffcanvas', zfOffcanvas)
+    .service('FoundationOffcanvas', FoundationOffcanvas)
+  ;
+
+  FoundationOffcanvas.$inject = ['FoundationApi'];
+
+  function FoundationOffcanvas(foundationApi) {
+    var service    = {};
+
+    service.activate = activate;
+    service.deactivate = deactivate;
+
+    return service;
+
+    //target should be element ID
+    function activate(target) {
+      foundationApi.publish(target, 'show');
+    }
+
+    //target should be element ID
+    function deactivate(target) {
+      foundationApi.publish(target, 'hide');
+    }
+
+    function toggle(target) {
+      foundationApi.publish(target, 'toggle');
+    }
+  }
+
+  zfOffcanvas.$inject = ['FoundationApi'];
+
+  function zfOffcanvas(foundationApi) {
+    var directive = {
+      restrict: 'EA',
+      templateUrl: 'components/offcanvas/offcanvas.html',
+      transclude: true,
+      scope: {
+        position: '@'
+      },
+      replace: true,
+      compile: compile
+    };
+
+    return directive;
+
+    function compile(tElement, tAttrs, transclude) {
+      var type = 'offcanvas';
+
+      return {
+        pre: preLink,
+        post: postLink
+      }
+
+      function preLink(scope, iElement, iAttrs, controller) {
+        iAttrs.$set('zf-closable', type);
+        document.body.classList.add('has-off-canvas');
+      }
+
+      function postLink(scope, element, attrs) {
+        scope.position = scope.position || 'left';
+
+        scope.active = false;
+        //setup
+        foundationApi.subscribe(attrs.id, function(msg) {
+          if(msg === 'show' || msg === 'open') {
+            scope.show();
+          } else if (msg === 'close' || msg === 'hide') {
+            scope.hide();
+          } else if (msg === 'toggle') {
+            scope.toggle();
+          }
+
+          if (!scope.$root.$$phase) {
+            scope.$apply();
+          }
+          
+          return;
+        });
+
+        scope.hide = function() {
+          scope.active = false;
+          return;
+        };
+
+        scope.show = function() {
+          scope.active = true;
+          return;
+        };
+
+        scope.toggle = function() {
+          scope.active = !scope.active;
+          return;
+        };
+      }
+    }
+  }
+
+})();
+
+(function() {
+  'use strict';
+
   angular.module('foundation.panel', ['foundation.core'])
     .directive('zfPanel', zfPanel)
     .service('FoundationPanel', FoundationPanel)
@@ -40885,109 +40676,6 @@ angular.module('markdown', [])
             foundationApi.animate(element, scope.active, animationIn, animationOut);
           }
         });
-      }
-    }
-  }
-
-})();
-
-(function() {
-  'use strict';
-
-  angular.module('foundation.offcanvas', ['foundation.core'])
-    .directive('zfOffcanvas', zfOffcanvas)
-    .service('FoundationOffcanvas', FoundationOffcanvas)
-  ;
-
-  FoundationOffcanvas.$inject = ['FoundationApi'];
-
-  function FoundationOffcanvas(foundationApi) {
-    var service    = {};
-
-    service.activate = activate;
-    service.deactivate = deactivate;
-
-    return service;
-
-    //target should be element ID
-    function activate(target) {
-      foundationApi.publish(target, 'show');
-    }
-
-    //target should be element ID
-    function deactivate(target) {
-      foundationApi.publish(target, 'hide');
-    }
-
-    function toggle(target) {
-      foundationApi.publish(target, 'toggle');
-    }
-  }
-
-  zfOffcanvas.$inject = ['FoundationApi'];
-
-  function zfOffcanvas(foundationApi) {
-    var directive = {
-      restrict: 'EA',
-      templateUrl: 'components/offcanvas/offcanvas.html',
-      transclude: true,
-      scope: {
-        position: '@'
-      },
-      replace: true,
-      compile: compile
-    };
-
-    return directive;
-
-    function compile(tElement, tAttrs, transclude) {
-      var type = 'offcanvas';
-
-      return {
-        pre: preLink,
-        post: postLink
-      }
-
-      function preLink(scope, iElement, iAttrs, controller) {
-        iAttrs.$set('zf-closable', type);
-        document.body.classList.add('has-off-canvas');
-      }
-
-      function postLink(scope, element, attrs) {
-        scope.position = scope.position || 'left';
-
-        scope.active = false;
-        //setup
-        foundationApi.subscribe(attrs.id, function(msg) {
-          if(msg === 'show' || msg === 'open') {
-            scope.show();
-          } else if (msg === 'close' || msg === 'hide') {
-            scope.hide();
-          } else if (msg === 'toggle') {
-            scope.toggle();
-          }
-
-          if (!scope.$root.$$phase) {
-            scope.$apply();
-          }
-          
-          return;
-        });
-
-        scope.hide = function() {
-          scope.active = false;
-          return;
-        };
-
-        scope.show = function() {
-          scope.active = true;
-          return;
-        };
-
-        scope.toggle = function() {
-          scope.active = !scope.active;
-          return;
-        };
       }
     }
   }
@@ -41150,6 +40838,318 @@ angular.module('markdown', [])
         foundationApi.publish(target, ['toggle', id]);
         e.preventDefault();
       });
+    }
+  }
+
+})();
+
+(function() {
+  'use strict';
+
+  angular.module('foundation.tabs', ['foundation.core'])
+    .controller('ZfTabsController', ZfTabsController)
+    .directive('zfTabs', zfTabs)
+    .directive('zfTabContent', zfTabContent)
+    .directive('zfTab', zfTab)
+    .directive('zfTabIndividual', zfTabIndividual)
+    .directive('zfTabHref', zfTabHref)
+    .directive('zfTabCustom', zfTabCustom)
+    .directive('zfTabContentCustom', zfTabContentCustom)
+    .service('FoundationTabs', FoundationTabs)
+  ;
+
+  FoundationTabs.$inject = ['FoundationApi'];
+
+  function FoundationTabs(foundationApi) {
+    var service    = {};
+
+    service.activate = activate;
+
+    return service;
+
+    //target should be element ID
+    function activate(target) {
+      foundationApi.publish(target, 'show');
+    }
+
+  }
+
+  ZfTabsController.$inject = ['$scope', 'FoundationApi'];
+
+  function ZfTabsController($scope, foundationApi) {
+    var controller = this;
+    var tabs       = controller.tabs = $scope.tabs = [];
+    var id         = '';
+
+    controller.select = function(selectTab) {
+      tabs.forEach(function(tab) {
+        tab.active = false;
+        tab.scope.active = false;
+
+        if(tab.scope === selectTab) {
+          foundationApi.publish(id, ['activate', tab]);
+
+          tab.active = true;
+          tab.scope.active = true;
+        }
+      });
+
+    };
+
+    controller.addTab = function addTab(tabScope) {
+      tabs.push({ scope: tabScope, active: false, parentContent: controller.id });
+
+      if(tabs.length === 1) {
+        tabs[0].active = true;
+        tabScope.active = true;
+      }
+    };
+
+    controller.getId = function() {
+      return id;
+    };
+
+    controller.setId = function(newId) {
+      id = newId;
+    };
+  }
+
+  zfTabs.$inject = ['FoundationApi'];
+
+  function zfTabs(foundationApi) {
+    var directive = {
+      restrict: 'EA',
+      transclude: 'true',
+      replace: true,
+      templateUrl: 'components/tabs/tabs.html',
+      controller: 'ZfTabsController',
+      scope: {
+        displaced: '@?'
+      },
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs, controller) {
+      scope.id = attrs.id || foundationApi.generateUuid();
+      scope.showTabContent = scope.displaced !== 'true';
+      attrs.$set('id', scope.id);
+      controller.setId(scope.id);
+
+      //update tabs in case tab-content doesn't have them
+      var updateTabs = function() {
+        foundationApi.publish(scope.id + '-tabs', scope.tabs);
+      };
+
+      foundationApi.subscribe(scope.id + '-get-tabs', function() {
+        updateTabs();
+      });
+    }
+  }
+
+  zfTabContent.$inject = ['FoundationApi'];
+
+  function zfTabContent(foundationApi) {
+    var directive = {
+      restrict: 'A',
+      transclude: 'true',
+      replace: true,
+      scope: {
+        tabs: '=?',
+        target: '@'
+      },
+      templateUrl: 'components/tabs/tab-content.html',
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs, ctrl) {
+      scope.tabs = scope.tabs || [];
+      var id = scope.target;
+
+      foundationApi.subscribe(id, function(msg) {
+        if(msg[0] === 'activate') {
+          var tabId = msg[1];
+          scope.tabs.forEach(function (tab) {
+            tab.scope.active = false;
+            tab.active = false;
+
+            if(tab.scope.id === id) {
+              tab.scope.active = true;
+              tab.active = true;
+            }
+          });
+        }
+      });
+
+      //if tabs empty, request tabs
+      if(scope.tabs.length === 0) {
+        foundationApi.subscribe(id + '-tabs', function(tabs) {
+          scope.tabs = tabs;
+        });
+
+        foundationApi.publish(id + '-get-tabs', '');
+      }
+    }
+  }
+
+  zfTab.$inject = ['FoundationApi'];
+
+  function zfTab(foundationApi) {
+    var directive = {
+      restrict: 'EA',
+      templateUrl: 'components/tabs/tab.html',
+      transclude: true,
+      scope: {
+        title: '@'
+      },
+      require: '^zfTabs',
+      replace: true,
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs, controller, transclude) {
+      scope.id = attrs.id || foundationApi.generateUuid();
+      scope.active = false;
+      scope.transcludeFn = transclude;
+      controller.addTab(scope);
+
+      foundationApi.subscribe(scope.id, function(msg) {
+        if(msg === 'show' || msg === 'open' || msg === 'activate') {
+          scope.makeActive();
+        }
+      });
+
+      scope.makeActive = function() {
+        controller.select(scope);
+      };
+    }
+  }
+
+  zfTabIndividual.$inject = ['FoundationApi'];
+
+  function zfTabIndividual(foundationApi) {
+    var directive = {
+      restrict: 'EA',
+      transclude: 'true',
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs, ctrl, transclude) {
+      var tab = scope.$eval(attrs.tab);
+      var id = tab.scope.id;
+
+      tab.scope.transcludeFn(tab.scope, function(tabContent) {
+        element.append(tabContent);
+      });
+
+      foundationApi.subscribe(tab.scope.id, function(msg) {
+        foundationApi.publish(tab.parentContent, ['activate', tab.scope.id]);
+        scope.$apply();
+      });
+
+    }
+  }
+
+  //custom tabs
+
+  zfTabHref.$inject = ['FoundationApi'];
+
+  function zfTabHref(foundationApi) {
+    var directive = {
+      restrict: 'A',
+      replace: false,
+      link: link
+    }
+
+    return directive;
+
+    function link(scope, element, attrs, ctrl) {
+      var target = attrs.zfTabHref;
+
+      foundationApi.subscribe(target, function(msg) {
+        if(msg === 'activate' || msg === 'show' || msg === 'open') {
+          makeActive();
+        }
+      });
+
+
+      element.on('click', function(e) {
+        foundationApi.publish(target, 'activate');
+        makeActive();
+        e.preventDefault();
+      });
+
+      function makeActive() {
+        element.parent().children().removeClass('is-active');
+        element.addClass('is-active');
+      }
+    }
+  }
+
+  zfTabCustom.$inject = ['FoundationApi'];
+
+  function zfTabCustom(foundationApi) {
+    var directive = {
+      restrict: 'A',
+      replace: false,
+      link: link
+    };
+
+    return directive;
+
+    function link(scope, element, attrs, ctrl, transclude) {
+      var children = element.children();
+      angular.element(children[0]).addClass('is-active');
+    }
+  }
+
+  zfTabContentCustom.$inject = ['FoundationApi'];
+
+  function zfTabContentCustom(foundationApi) {
+    return {
+      restrict: 'A',
+      link: link
+    };
+
+    function link(scope, element, attrs) {
+      var tabs = [];
+      var children = element.children();
+
+      angular.forEach(children, function(node) {
+        if(node.id) {
+          var tabId = node.id;
+          tabs.push(tabId);
+          foundationApi.subscribe(tabId, function(msg) {
+            if(msg === 'activate' || msg === 'show' || msg === 'open') {
+              activateTabs(tabId);
+            }
+          });
+
+          if(tabs.length === 1) {
+            var el = angular.element(node);
+            el.addClass('is-active');
+          }
+        }
+      });
+
+      function activateTabs(tabId) {
+        var tabNodes = element.children();
+        angular.forEach(tabNodes, function(node) {
+          var el = angular.element(node);
+          el.removeClass('is-active');
+          if(el.attr('id') === tabId) {
+            el.addClass('is-active');
+          }
+
+        });
+      }
     }
   }
 
