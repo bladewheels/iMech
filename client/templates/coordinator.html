@@ -23,6 +23,8 @@ animationOut: slideOutLeftt
                 </div>
                 <div class="card-section">
                     <p>Work Orders started but still needing parts and/or labour estimates</p>
+                    <p>Hover your mouse over the chart for details</p>
+                    <p>Click here to drilldown into further details and take action</p>
                 </div>
             </div>
         </div>
@@ -35,18 +37,22 @@ animationOut: slideOutLeftt
                 </div>
                 <div class="card-section">
                     <p>Work Orders estimated but still needing scheduling and/or assignment to a Mech</p>
+                    <p>Hover your mouse over the chart for details</p>
+                    <p>Click here to drilldown into further details and take action</p>
                 </div>
             </div>
         </div>
 
         <div class="grid-content medium-6 large-4">
-            <div class="card alert" ui-sref="coordinator.work_orders_scheduled">
+            <div class="card alert" ui-sref="coordinator.work_orders_scheduled" zf-open="scheduled-work-orders-opened-notify">
                 <div id="chart_div_for_scheduled_work_orders"></div>
                 <div class="card-divider">
                     Scheduled
                 </div>
                 <div class="card-section">
                     <p>Work Orders scheduled but still needing assignment to a Mech</p>
+                    <p>Hover your mouse over the chart for details</p>
+                    <p>Click here to drilldown into further details and take action</p>
                 </div>
             </div>
         </div>
@@ -57,3 +63,8 @@ animationOut: slideOutLeftt
 
 <!-- detail view -->
 <div ui-view></div>
+
+
+<zf-notification-static id="scheduled-work-orders-opened-notify" title="Drilldown" position="bottom-right" autoclose="3000">
+    <p>Scroll down to view and take action</p>
+</zf-notification-static>
