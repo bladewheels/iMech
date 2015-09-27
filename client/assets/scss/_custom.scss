@@ -2,6 +2,9 @@
 .top-margin {
 	margin-top: 2%;
 }
+.left-pad {
+  padding-left: 5%;
+}
 
 .custom-accordion-title {
   @include accordion-title(

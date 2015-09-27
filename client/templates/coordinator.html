@@ -19,8 +19,8 @@ animationOut: slideOutLeftt
         <div class="grid-content medium-8 large-6">
             <div class="card success" ui-sref="work_orders_open">
                 <div id="chart_div_for_open_work_orders"></div>
-                <div class="card-divider" ng-controller="ScheduledOrdersController">
-                    <h4>{{(customers | confirmed: 'work').length}} New</h4>
+                <div class="card-divider" ng-controller="OrdersController">
+                    <h4>{{(customers | is: stateIs.NEW).length}} New</h4>
                 </div>
                 <div class="card-section">
                     <p>Work Orders <strong>needing parts and/or labour estimates</strong></p>
@@ -33,11 +33,11 @@ animationOut: slideOutLeftt
         <div class="grid-content medium-8 large-6">
             <div class="card warning" ui-sref="work_orders_estimated">
                 <div id="chart_div_for_estimated_work_orders"></div>
-                <div class="card-divider" ng-controller="ScheduledOrdersController">
-                    <h4>{{(customers | confirmed: 'work' : false).length}} Estimated</h4>
+                <div class="card-divider" ng-controller="OrdersController">
+                    <h4>{{(customers | is: stateIs.ESTIMATED).length}} Estimated</h4>
                 </div>
                 <div class="card-section">
-                    <p>Work Orders <strong>needing scheduling</strong></p>
+                    <p>Work Orders <strong>estimated for a Customer</strong></p>
                     <p class="show-for-large">Hover your mouse over the chart for details</p>
                     <p>Click here to drilldown into further details and take action</p>
                 </div>
@@ -47,11 +47,11 @@ animationOut: slideOutLeftt
         <div class="grid-content medium-8 large-6">
             <div class="card alert">
                 <div id="chart_div_for_scheduled_work_orders"></div>
-                <div class="card-divider" ng-controller="ScheduledOrdersController">
-                    <h4>{{(customers | confirmed: 'schedule' : false).length}} Scheduled</h4>
+                <div class="card-divider" ng-controller="OrdersController">
+                    <h4>{{(customers | is: stateIs.AUTHORIZED).length}} Authorized</h4>
                 </div>
                 <div class="card-section">
-                    <p>Work Orders <strong>needing assignment</strong> to a Mech</p>
+                    <p>Work Orders <strong>ready for scheduling</strong></p>
                     <p class="show-for-large">Hover your mouse over the chart for <strong>details</strong></p>
                     <p ui-sref="coordinator.work_orders_scheduled" zf-open="work-orders-notify">Click here to <strong>drilldown into further details and take action</strong></p>
                 </div>
@@ -61,11 +61,11 @@ animationOut: slideOutLeftt
         <div class="grid-content medium-8 large-6">
             <div class="card success">
                 <div id="chart_div_for_assigned_work_orders"></div>
-                <div class="card-divider" ng-controller="ScheduledOrdersController">
-                    <h4>{{(customers | confirmed: 'schedule' : true).length}} Assigned</h4>
+                <div class="card-divider" ng-controller="OrdersController">
+                    <h4>{{(customers | is: stateIs.SCHEDULED).length}} Scheduled</h4>
                 </div>
                 <div class="card-section">
-                    <p>Work Orders <strong>assigned</strong> to a Mech</p>
+                    <p>Work Orders <strong>needing assignment</strong> to a Mech</p>
                     <p class="show-for-large">Hover your mouse over the chart for <strong>details</strong></p>
                     <p ui-sref="coordinator.work_orders_assigned" zf-open="work-orders-notify">Click here to <strong>drilldown into further details and take action</strong></p>
                 </div>

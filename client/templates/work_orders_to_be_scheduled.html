@@ -15,16 +15,16 @@ animationOut: slideOutRight
     </div>
 </div>
 
-<div class="grid-block medium-10 align-center" ng-controller="ScheduledOrdersController">
+<div class="grid-block medium-10 align-center" ng-controller="OrdersController">
     <div class="grid-content medium-8">
 
-        <h1>11 Work Orders awaiting scheduling</h1>
+        <h3>{{(customers | is: stateIs.AUTHORIZED).length}} Work Orders awaiting scheduling</h3>
         <hr>
 
         <div>
 
             <zf-accordion multi-open="false">
-                <zf-accordion-item  class="custom-accordion-title" ng-repeat="customer in customers" title="{{ customer.work.sinceNow }}">
+                <zf-accordion-item  class="custom-accordion-title" ng-repeat="customer in customers | is: stateIs.AUTHORIZED" title="{{ customer.work.sinceNow }}">
                     <div class="card">
                         <div class="card-divider">
                             {{customer.name}} requested that we:
