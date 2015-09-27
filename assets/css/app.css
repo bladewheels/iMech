@@ -6402,6 +6402,9 @@ blockquote p {
 .top-margin {
   margin-top: 2%; }
 
+.left-pad {
+  padding-left: 5%; }
+
 .custom-accordion-title {
   padding: 1rem;
   background: #F2F6F6;
